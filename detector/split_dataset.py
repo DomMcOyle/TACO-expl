@@ -5,33 +5,38 @@ import numpy as np
 import random
 import datetime as dt
 import copy
+from sklearn.model_selection import train_test_split
+import dataset as dsutil
 
 parser = argparse.ArgumentParser(description='User args')
 parser.add_argument('--dataset_dir', required=True, help='Path to dataset annotations')
 parser.add_argument('--test_percentage', type=int, default=10, required=False, help='Percentage of images used for the testing set')
 parser.add_argument('--val_percentage', type=int, default=10, required=False, help='Percentage of images used for the validation set')
 parser.add_argument('--nr_trials', type=int, default=10, required=False, help='Number of splits')
+parser.add_argument('--keep_categories', type=list, default=None, required=False, help="Super categories to keep distinguished")
+parser.add_argument('--use_unofficial', type=Bool, default=False, required=False, help="boolean to indicate whether to use the unofficial TACO")
+parser.add_argument('--seed', type=int, default=42, required=False, help="seed for the dataset splitting")
+
 
 args = parser.parse_args()
 
-ann_input_path = args.dataset_dir + '/' + 'annotations.json'
+add_on = "unofficial_" if args.use_unofficial else ""
+ann_input_path = args.dataset_dir + '/' + add_on +'annotations.json'
 
 # Load annotations
 with open(ann_input_path, 'r') as f:
     dataset = json.loads(f.read())
 
+if args.keep_categories is not None:
+  class_map = dsutil.Taco.create_map(dataset["categories"], keep_categories)
+  dsutil.Taco.replace_dataset_classes(dataset, class_map)
+
 anns = dataset['annotations']
 scene_anns = dataset['scene_annotations']
 imgs = dataset['images']
-nr_images = len(imgs)
-
-nr_testing_images = int(nr_images*args.test_percentage*0.01+0.5)
-nr_nontraining_images = int(nr_images*(args.test_percentage+args.val_percentage)*0.01+0.5)
 
 
 for i in range(args.nr_trials):
-    random.shuffle(imgs)
-
     # Add new datasets
     train_set = {
         'info': None,
@@ -49,9 +54,10 @@ for i in range(args.nr_trials):
     val_set = copy.deepcopy(train_set)
     test_set = copy.deepcopy(train_set)
 
-    test_set['images'] = imgs[0:nr_testing_images]
-    val_set['images'] = imgs[nr_testing_images:nr_nontraining_images]
-    train_set['images'] = imgs[nr_nontraining_images:nr_images]
+    train_set['images'], partial = train_test_split(dataset['images'],
+                                                    test_size=args.test_percentage+args.val_percentage)
+    val_set['images'], test_set["images"] = train_test_split(partial,
+                                            test_size=args.test_percentage/(args.test_percentage+args.val_percentage))
 
     # Aux Image Ids to split annotations
     test_img_ids, val_img_ids, train_img_ids = [],[],[]

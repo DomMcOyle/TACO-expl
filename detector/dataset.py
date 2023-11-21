@@ -248,3 +248,23 @@ class Taco(utils.Dataset):
         # Update annotations category id tag
         for ann in dataset['annotations']:
             ann['category_id'] = class_ids_map[ann['category_id']]
+    
+    def create_map(self, original, keep_supercategories):
+    """
+    Function creating a map for the replace_dataset_classes function. it requires as input
+    the full dictionary of the categories as read from the annotations.json and a list of super-categories to
+    keep and group.
+    params:
+        original: original dictionary of the categories
+        keep_supercategories: list of categories (strings containing their names) to be kept distinguised and grouped
+    returns:
+        class_map: dictionary containing the map "old_category_name" : "new_category_name". The supercategories not mentioned
+        in keep_supercategories are grouped under the category "Other"
+    """    
+        class_map = {}
+        for cat in original:
+            if cat["supercategory"] in keep_supercategories:
+                class_map[cat["name"]] = cat["supercategory"]
+            else:
+                class_map[cat["name"]] = "Other"
+        return class_map    
