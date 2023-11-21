@@ -55,8 +55,10 @@ for i in range(args.nr_trials):
     test_set = copy.deepcopy(train_set)
 
     train_set['images'], partial = train_test_split(dataset['images'],
+                                                    random_state=args.seed+i,
                                                     test_size=args.test_percentage+args.val_percentage)
     val_set['images'], test_set["images"] = train_test_split(partial,
+                                            random_state=args.seed+i,
                                             test_size=args.test_percentage/(args.test_percentage+args.val_percentage))
 
     # Aux Image Ids to split annotations
