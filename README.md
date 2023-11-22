@@ -1,3 +1,7 @@
+# REPOSITORY FOR THE ML4CV PROJECT @ UNIBO A.Y. 22/23
+
+Link for the dataset: https://drive.google.com/drive/folders/1UqMT7axH7pZy8eydiOT90Vi_6DaNK4i-?usp=sharing
+
 <p align="center">
 <img src="https://raw.githubusercontent.com/wiki/pedropro/TACO/images/logonav.png" width="25%"/>
 </p>
