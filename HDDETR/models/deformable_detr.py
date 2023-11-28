@@ -19,8 +19,8 @@ import torch.nn.functional as F
 from torch import nn
 import math
 
-from util import box_ops
-from util.misc import (
+from HDDETR.util import box_ops
+from HDDETR.util.misc import (
     NestedTensor,
     nested_tensor_from_tensor_list,
     accuracy,

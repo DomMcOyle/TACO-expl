@@ -7,8 +7,8 @@ import torch
 from torch.optim import Optimizer
 
 import mmcv
-from mmcv.parallel import is_module_wrapper
-from mmcv.runner.checkpoint import weights_to_cpu, get_state_dict
+from mmengine.model.wrappers.utils import is_model_wrapper as is_module_wrapper
+from mmengine.runner.checkpoint import weights_to_cpu, get_state_dict
 
 try:
     import apex
