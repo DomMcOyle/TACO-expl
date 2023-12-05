@@ -22,7 +22,7 @@ import torch.utils.checkpoint as checkpoint
 from torch.nn.init import xavier_uniform_, constant_, uniform_, normal_
 
 from HDDETR.util.misc import inverse_sigmoid
-from models.ops.modules import MSDeformAttn
+from HDDETR.models.ops.modules import MSDeformAttn
 
 
 class DeformableTransformer(nn.Module):
