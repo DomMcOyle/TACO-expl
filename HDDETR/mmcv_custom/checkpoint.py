@@ -21,7 +21,7 @@ from mmengine.fileio import FileClient
 from mmengine.fileio import load as load_file
 from mmengine.model.wrappers.utils import is_model_wrapper as is_module_wrapper
 from HDDETR.util.misc import mkdir_or_exist
-from mmengine.runner import get_dist_info
+from mmengine.dist import get_dist_info
 
 ENV_MMCV_HOME = "MMCV_HOME"
 ENV_XDG_CACHE_HOME = "XDG_CACHE_HOME"
