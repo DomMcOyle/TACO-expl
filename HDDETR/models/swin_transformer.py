@@ -12,7 +12,7 @@ import torch.utils.checkpoint as checkpoint
 import numpy as np
 from timm.models.layers import DropPath, to_2tuple, trunc_normal_
 
-from mmcv_custom import load_checkpoint
+from HDDETR.mmcv_custom import load_checkpoint
 from mmdet.utils import get_root_logger
 
 
