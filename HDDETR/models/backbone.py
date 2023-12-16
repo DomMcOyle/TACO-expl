@@ -97,8 +97,8 @@ class BackboneBase(nn.Module):
             ):
                 parameter.requires_grad_(False)
         if return_interm_layers:
-            # return_layers = {"layer1": "0", "layer2": "1", "layer3": "2", "layer4": "3"}
-            return_layers = {"layer2": "0", "layer3": "1", "layer4": "2"}
+            # return_layers = {"layer1": "-1", "layer2": "1", "layer3": "2", "layer4": "3"}
+            return_layers = {"layer1": "10", "layer2": "0", "layer3": "1", "layer4": "2"}
             self.strides = [8, 16, 32]
             self.num_channels = [512, 1024, 2048]
         else:
@@ -111,11 +111,14 @@ class BackboneBase(nn.Module):
         xs = self.body(tensor_list.tensors)
         out: Dict[str, NestedTensor] = {}
         for name, x in xs.items():
-            m = tensor_list.mask
-            assert m is not None
-            mask = F.interpolate(m[None].float(), size=x.shape[-2:]).to(torch.bool)[0]
-            out[name] = NestedTensor(x, mask)
-        return out
+            if name == "10": 
+                first_layer_output = x
+            else:
+                m = tensor_list.mask
+                assert m is not None
+                mask = F.interpolate(m[None].float(), size=x.shape[-2:]).to(torch.bool)[0]
+                out[name] = NestedTensor(x, mask)
+        return out, first_layer_output
 
 
 class Backbone(BackboneBase):
@@ -244,7 +247,7 @@ class Joiner(nn.Sequential):
         self.num_channels = backbone.num_channels
 
     def forward(self, tensor_list: NestedTensor):
-        xs = self[0](tensor_list)
+        xs, fl_out = self[0](tensor_list)
         out: List[NestedTensor] = []
         pos = []
         for name, x in sorted(xs.items()):
@@ -254,7 +257,7 @@ class Joiner(nn.Sequential):
         for x in out:
             pos.append(self[1](x).to(x.tensors.dtype))
 
-        return out, pos
+        return out, pos, fl_out
 
 
 def build_backbone(args):

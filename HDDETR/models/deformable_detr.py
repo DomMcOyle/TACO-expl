@@ -177,7 +177,7 @@ class DeformableDETR(nn.Module):
         """
         if not isinstance(samples, NestedTensor):
             samples = nested_tensor_from_tensor_list(samples)
-        features, pos = self.backbone(samples)
+        features, pos, fl_output = self.backbone(samples)
 
         srcs = []
         masks = []
@@ -262,6 +262,7 @@ class DeformableDETR(nn.Module):
             "pred_boxes": outputs_coords_one2one[-1],
             "pred_logits_one2many": outputs_classes_one2many[-1],
             "pred_boxes_one2many": outputs_coords_one2many[-1],
+            "backbone_out": fl_output
         }
         if self.aux_loss:
             out["aux_outputs"] = self._set_aux_loss(
