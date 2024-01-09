@@ -258,6 +258,7 @@ class DeformableDETR(nn.Module):
         outputs_coords_one2many = torch.stack(outputs_coords_one2many)
 
         out = {
+            "decoder_out":hs,
             "pred_logits": outputs_classes_one2one[-1],
             "pred_boxes": outputs_coords_one2one[-1],
             "pred_logits_one2many": outputs_classes_one2many[-1],
