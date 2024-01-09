@@ -221,6 +221,7 @@ class DeformableDETR(nn.Module):
             inter_references,
             enc_outputs_class,
             enc_outputs_coord_unact,
+            intermediate_enc_out,
         ) = self.transformer(srcs, masks, pos, query_embeds, self_attn_mask)
 
         outputs_classes_one2one = []
@@ -263,7 +264,8 @@ class DeformableDETR(nn.Module):
             "pred_boxes": outputs_coords_one2one[-1],
             "pred_logits_one2many": outputs_classes_one2many[-1],
             "pred_boxes_one2many": outputs_coords_one2many[-1],
-            "backbone_out": fl_output
+            "backbone_out": fl_output,
+            "intermediate_enc_out": intermediate_enc_out
         }
         if self.aux_loss:
             out["aux_outputs"] = self._set_aux_loss(
