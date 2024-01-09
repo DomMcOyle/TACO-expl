@@ -417,11 +417,11 @@ class DeformableTransformerEncoder(nn.Module):
                 )
             if i < 4:
                 if intermediate_out is None:
-                    intermediate_out = output.deepcopy()
+                    intermediate_out = output.clone()
                 else:
                     intermediate_out = torch.cat([intermediate_out, output], axis=-1)
 
-        return output, intermediate_output
+        return output, intermediate_out
 
 
 class DeformableTransformerDecoderLayer(nn.Module):
