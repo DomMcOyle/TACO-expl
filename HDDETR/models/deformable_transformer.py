@@ -216,7 +216,7 @@ class DeformableTransformer(nn.Module):
         valid_ratios = torch.stack([self.get_valid_ratio(m) for m in masks], 1)
 
         # encoder
-        memory, intermediate_out = self.encoder(
+        memory = self.encoder(
             src_flatten,
             spatial_shapes,
             level_start_index,
@@ -280,6 +280,13 @@ class DeformableTransformer(nn.Module):
         )
 
         inter_references_out = inter_references
+        
+        encoder_out = {"src":memory,
+        "valid_ratios":valid_ratios,
+        "spatial_shapes":spatial_shapes,
+        "level_start_index":level_start_index,
+        "pos": lvl_pos_embed_flatten,
+        "padding_mask" mask_flatten}
         if self.two_stage:
             return (
                 hs,
@@ -287,9 +294,9 @@ class DeformableTransformer(nn.Module):
                 inter_references_out,
                 enc_outputs_class,
                 enc_outputs_coord_unact,
-                intermediate_out,
+                encoder_out,
             )
-        return hs, init_reference_out, inter_references_out, None, None, intermediate_out
+        return hs, init_reference_out, inter_references_out, None, None, encoder_out
 
 
 class DeformableTransformerEncoderLayer(nn.Module):
@@ -394,7 +401,6 @@ class DeformableTransformerEncoder(nn.Module):
         reference_points = self.get_reference_points(
             spatial_shapes, valid_ratios, device=src.device
         )
-        intermediate_out = None
         for i, layer in enumerate(self.layers):
             if self.use_checkpoint:
                 output = checkpoint.checkpoint(
@@ -415,13 +421,8 @@ class DeformableTransformerEncoder(nn.Module):
                     level_start_index,
                     padding_mask,
                 )
-            if i < 4:
-                if intermediate_out is None:
-                    intermediate_out = output.clone()
-                else:
-                    intermediate_out = torch.cat([intermediate_out, output], axis=-1)
 
-        return output, intermediate_out
+        return output
 
 
 class DeformableTransformerDecoderLayer(nn.Module):
