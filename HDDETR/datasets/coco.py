@@ -24,7 +24,7 @@ from pycocotools import mask as coco_mask
 
 from .torchvision_datasets import CocoDetection as TvCocoDetection
 from HDDETR.util.misc import get_local_rank, get_local_size
-import datasets.transforms as T
+import HDDETR.datasets.transforms as T
 
 
 class CocoDetection(TvCocoDetection):
