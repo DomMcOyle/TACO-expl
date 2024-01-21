@@ -258,6 +258,10 @@ class PostProcessSegm(nn.Module):
 
     @torch.no_grad()
     def forward(self, results, outputs, orig_target_sizes, max_target_sizes):
+    """
+    max_target_sizes: sizes after transform
+    orig_target_sizes: orginal size befpre transform
+    """
         assert len(orig_target_sizes) == len(max_target_sizes)
         max_h, max_w = max_target_sizes.max(0)[0].tolist()
         outputs_masks = outputs["pred_masks"].squeeze(2)
