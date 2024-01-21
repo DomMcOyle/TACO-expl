@@ -286,7 +286,7 @@ class DeformableTransformer(nn.Module):
         "spatial_shapes":spatial_shapes,
         "level_start_index":level_start_index,
         "pos": lvl_pos_embed_flatten,
-        "padding_mask" mask_flatten}
+        "padding_mask": mask_flatten}
         if self.two_stage:
             return (
                 hs,
