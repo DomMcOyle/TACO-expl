@@ -112,7 +112,11 @@ class BackboneBase(nn.Module):
         out: Dict[str, NestedTensor] = {}
         for name, x in xs.items():
             if name == "10": 
-                first_layer_output = x
+                m = tensor_list.mask
+                assert m is not None
+                mask = F.interpolate(m[None].float(), size=x.shape[-2:]).to(torch.bool)[0]
+                first_layer_output = NestedTensor(x, mask)
+                
             else:
                 m = tensor_list.mask
                 assert m is not None
