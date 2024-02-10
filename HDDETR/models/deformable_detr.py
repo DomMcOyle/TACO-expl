@@ -323,19 +323,24 @@ class SetCriterion(nn.Module):
         """
         assert "pred_logits" in outputs
         src_logits = outputs["pred_logits"]
-
+        
+        # recovers indexes for matching
         idx = self._get_src_permutation_idx(indices)
+        # recovers target classes from ground truth
         target_classes_o = torch.cat(
             [t["labels"][J] for t, (_, J) in zip(targets, indices)]
         )
+        # creates tensor of shape (bs, queries)
         target_classes = torch.full(
             src_logits.shape[:2],
             self.num_classes,
             dtype=torch.int64,
             device=src_logits.device,
         )
+        # sets target_class
         target_classes[idx] = target_classes_o
-
+        
+        # creates one hot of (bs, queries, n_labels + 1)
         target_classes_onehot = torch.zeros(
             [src_logits.shape[0], src_logits.shape[1], src_logits.shape[2] + 1],
             dtype=src_logits.dtype,
@@ -343,8 +348,9 @@ class SetCriterion(nn.Module):
             device=src_logits.device,
         )
         target_classes_onehot.scatter_(2, target_classes.unsqueeze(-1), 1)
-
+        # excludes possible empty targets (sets one-hot to only zeroes)
         target_classes_onehot = target_classes_onehot[:, :, :-1]
+        
         loss_ce = (
             sigmoid_focal_loss(
                 src_logits,
@@ -438,6 +444,56 @@ class SetCriterion(nn.Module):
             "loss_dice": dice_loss(src_masks, target_masks, num_boxes),
         }
         return losses
+        
+    def loss_masks_MFD(self, outputs, targets, indices, num_boxes):
+        """Compute the losses related to the masks: the focal loss and the dice loss.
+           targets dicts must contain the key "masks" containing a tensor of dim [nb_target_boxes, h, w]
+        """
+        assert "pred_masks" in outputs
+
+        src_idx = self._get_src_permutation_idx(indices)
+        tgt_idx = self._get_tgt_permutation_idx(indices)
+
+        src_masks = outputs["pred_masks"]
+
+        # TODO use valid to mask invalid areas due to padding in loss
+        target_masks, valid = nested_tensor_from_tensor_list(
+            [t["masks"] for t in targets]
+        ).decompose()
+        target_masks = target_masks.to(src_masks)
+
+        src_masks = src_masks[src_idx]
+        src_boxes = outputs["pred_boxes"][src_idx]
+        real_size_masks = torch.zeroes(src_masks.shape[0],
+                                       target_masks.shape[-2],
+                                       target_masks.shape[-1])
+        for m in range(src_masks.shape[0]):
+            box_w = max(int(round((src_boxes[m,2]-src_boxes[m,0])item())), 1)
+            box_h = max(int(round((src_boxes[m,3]-src_boxes[m,1])item())), 1)
+            act_size = targets[src_idx[0][m]]["size"]
+            inter = mutils.interpolate(src_masks[m].expand(1,1,-1,-1),
+                                 (box_h, box_w),
+                                 mode="bilinear")[0,0,:,:]
+            _paste(inter, real_size_masks, src_boxes, m, act_size)
+                                 
+        src_masks = src_masks.flatten(1)
+
+        target_masks = target_masks[tgt_idx].flatten(1)
+
+        losses = {
+            "loss_mask": sigmoid_focal_loss(src_masks, target_masks, num_boxes),
+            "loss_dice": dice_loss(src_masks, target_masks, num_boxes),
+        }
+        return losses
+     
+    def _paste(roi, empty_mask, flatboxes, index, act_size):
+      ox = int(round(flatboxes[index][0].item()))
+      oy = int(round(flatboxes[index][1].item()))
+      x1 = min(roi.shape[1], act_size[1]-ox)
+      y1 = min(roi.shape[0], act_size[0]-oy)
+
+      empty_mask[index][oy:oy+roi.shape[0],
+                        ox:ox+roi.shape[1]] = roi[:y1,:x1]
 
     def _get_src_permutation_idx(self, indices):
         # permute predictions following indices
@@ -461,6 +517,7 @@ class SetCriterion(nn.Module):
             "cardinality": self.loss_cardinality,
             "boxes": self.loss_boxes,
             "masks": self.loss_masks,
+            "masksMFD": self.loss_masks_MFD,
         }
         assert loss in loss_map, f"do you really want to compute {loss} loss?"
         return loss_map[loss](outputs, targets, indices, num_boxes, **kwargs)
