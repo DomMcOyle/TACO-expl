@@ -464,19 +464,19 @@ class SetCriterion(nn.Module):
 
         src_masks = src_masks[src_idx]
         src_boxes = outputs["pred_boxes"][src_idx]
-        real_size_masks = torch.zeroes(src_masks.shape[0],
+        real_size_masks = torch.zeros(src_masks.shape[0],
                                        target_masks.shape[-2],
                                        target_masks.shape[-1])
         for m in range(src_masks.shape[0]):
-            box_w = max(int(round((src_boxes[m,2]-src_boxes[m,0])item())), 1)
-            box_h = max(int(round((src_boxes[m,3]-src_boxes[m,1])item())), 1)
+            box_w = max(int(round((src_boxes[m,2]-src_boxes[m,0]).item())), 1)
+            box_h = max(int(round((src_boxes[m,3]-src_boxes[m,1]).item())), 1)
             act_size = targets[src_idx[0][m]]["size"]
-            inter = mutils.interpolate(src_masks[m].expand(1,1,-1,-1),
+            inter = interpolate(src_masks[m].expand(1,1,-1,-1),
                                  (box_h, box_w),
                                  mode="bilinear")[0,0,:,:]
-            _paste(inter, real_size_masks, src_boxes, m, act_size)
+            self._paste(inter, real_size_masks, src_boxes, m, act_size)
                                  
-        src_masks = src_masks.flatten(1)
+        src_masks = real_size_masks.flatten(1).to(src_masks)
 
         target_masks = target_masks[tgt_idx].flatten(1)
 
@@ -486,14 +486,14 @@ class SetCriterion(nn.Module):
         }
         return losses
      
-    def _paste(roi, empty_mask, flatboxes, index, act_size):
+    def _paste(self, roi, empty_mask, flatboxes, index, act_size):
       ox = int(round(flatboxes[index][0].item()))
       oy = int(round(flatboxes[index][1].item()))
       x1 = min(roi.shape[1], act_size[1]-ox)
       y1 = min(roi.shape[0], act_size[0]-oy)
 
-      empty_mask[index][oy:oy+roi.shape[0],
-                        ox:ox+roi.shape[1]] = roi[:y1,:x1]
+      empty_mask[index][oy:oy+y1,
+                        ox:ox+x1] = roi[:y1,:x1]
 
     def _get_src_permutation_idx(self, indices):
         # permute predictions following indices
