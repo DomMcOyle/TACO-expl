@@ -298,9 +298,9 @@ class PostProcessSegmMFD(nn.Module):
         
 
         for i, (cur_mask, cur_boxes, t, tt) in enumerate(
-            zip(outputs_masks, output["unnormal_boxes"], max_target_sizes, orig_target_sizes)
+            zip(outputs["pred_masks"], outputs["unnormal_boxes"], max_target_sizes, orig_target_sizes)
         ):  
-            blank_mask = torch.zeros(output["pred_masks"].shape[1], max_h, max_w)
+            blank_mask = torch.zeros(outputs["pred_masks"].shape[1], max_h, max_w)
             for mask in range(cur_mask.shape[0]):
                 box_w = max(int(round((cur_boxes[mask,2]-cur_boxes[mask,0]).item())), 1)
                 box_h = max(int(round((cur_boxes[mask,3]-cur_boxes[mask,1]).item())), 1)
