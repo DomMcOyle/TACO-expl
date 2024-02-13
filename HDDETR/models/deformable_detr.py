@@ -463,7 +463,7 @@ class SetCriterion(nn.Module):
         target_masks = target_masks.to(src_masks)
 
         src_masks = src_masks[src_idx]
-        src_boxes = outputs["pred_boxes"][src_idx]
+        src_boxes = outputs["unnormal_boxes"][src_idx]
         real_size_masks = torch.zeros(src_masks.shape[0],
                                        target_masks.shape[-2],
                                        target_masks.shape[-1])

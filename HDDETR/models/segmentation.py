@@ -280,7 +280,52 @@ class PostProcessSegm(nn.Module):
             ).byte()
 
         return results
+        
+        
+class PostProcessSegmMFD(nn.Module):
+    def __init__(self, threshold=0.5):
+        super().__init__()
+        self.threshold = threshold
 
+    @torch.no_grad()
+    def forward(self, results, outputs, orig_target_sizes, max_target_sizes):
+        """
+        max_target_sizes: sizes after transform
+        orig_target_sizes: orginal size befpre transform
+        """
+        assert len(orig_target_sizes) == len(max_target_sizes)
+        max_h, max_w = max_target_sizes.max(0)[0].tolist()
+        
+
+        for i, (cur_mask, cur_boxes, t, tt) in enumerate(
+            zip(outputs_masks, output["unnormal_boxes"], max_target_sizes, orig_target_sizes)
+        ):  
+            blank_mask = torch.zeros(output["pred_masks"].shape[1], max_h, max_w)
+            for mask in range(cur_mask.shape[0]):
+                box_w = max(int(round((cur_boxes[mask,2]-cur_boxes[mask,0]).item())), 1)
+                box_h = max(int(round((cur_boxes[mask,3]-cur_boxes[mask,1]).item())), 1)
+                inter = interpolate(cur_mask[mask].expand(1,1,-1,-1),
+                                   (box_h, box_w),
+                                    mode="bilinear")[0,0,:,:]
+                self._paste(inter, blank_mask, cur_boxes, mask, t)
+            
+            blank_mask = (blank_mask.sigmoid() > self.threshold).cpu()
+            img_h, img_w = t[0], t[1]
+            results[i]["masks"] = blank_mask[:, :img_h, :img_w].unsqueeze(2)
+            results[i]["masks"] = F.interpolate(
+                results[i]["masks"].float(), size=tuple(tt.tolist()), mode="nearest"
+            ).byte()
+
+        return results
+        
+    def _paste(self, roi, empty_mask, flatboxes, index, act_size):
+      ox = int(round(flatboxes[index][0].item()))
+      oy = int(round(flatboxes[index][1].item()))
+      x1 = min(roi.shape[1], act_size[1]-ox)
+      y1 = min(roi.shape[0], act_size[0]-oy)
+
+      empty_mask[index][oy:oy+y1,
+                        ox:ox+x1] = roi[:y1,:x1]
 
 class PostProcessPanoptic(nn.Module):
     """This class converts the output of the model to the final panoptic result, in the format expected by the
