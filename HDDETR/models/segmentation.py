@@ -311,7 +311,7 @@ class PostProcessSegmMFD(nn.Module):
             
             blank_mask = (blank_mask.sigmoid() > self.threshold).cpu()
             img_h, img_w = t[0], t[1]
-            results[i]["masks"] = blank_mask[:, :img_h, :img_w].unsqueeze(2)
+            results[i]["masks"] = blank_mask[:, :img_h, :img_w].unsqueeze(1)
             results[i]["masks"] = F.interpolate(
                 results[i]["masks"].float(), size=tuple(tt.tolist()), mode="nearest"
             ).byte()
