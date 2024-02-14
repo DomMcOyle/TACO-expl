@@ -660,12 +660,7 @@ class PostProcessMFD(nn.Module):
 
         assert len(out_logits) == len(target_sizes)
         assert target_sizes.shape[1] == 2
-
-        prob = out_logits.sigmoid()
         
-        topk_values, topk_indexes = torch.topk(
-            prob.view(out_logits.shape[0], -1), self.topk, dim=1
-        )
         scores = outputs["top_scores"]
         topk_indexes = outputs["top_indexes"]
         labels = topk_indexes % out_logits.shape[2]
