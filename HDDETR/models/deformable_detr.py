@@ -645,7 +645,6 @@ class PostProcessMFD(nn.Module):
 
     def __init__(self, topk=100):
         super().__init__()
-        print("topk for eval:", self.topk)
 
     @torch.no_grad()
     def forward(self, outputs, target_sizes):
