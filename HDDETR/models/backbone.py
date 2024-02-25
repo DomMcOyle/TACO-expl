@@ -241,7 +241,7 @@ class TransformerBackbone(nn.Module):
             assert m is not None
             mask = F.interpolate(m[None].float(), size=x.shape[-2:]).to(torch.bool)[0]
             out[name] = NestedTensor(x, mask)
-        return out
+        return out, None
 
 
 class Joiner(nn.Sequential):
