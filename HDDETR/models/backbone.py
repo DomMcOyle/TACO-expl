@@ -245,7 +245,7 @@ class TransformerBackbone(nn.Module):
                 get_first_stage = False
             else:
                 out[name] = NestedTensor(x, mask)
-        return out, None
+        return out, fl_out
 
 
 class Joiner(nn.Sequential):
