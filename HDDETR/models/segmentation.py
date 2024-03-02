@@ -303,7 +303,7 @@ class PostProcessSegmMFD(nn.Module):
         for i, (cur_mask, cur_boxes, t, tt) in enumerate(
             zip(outputs["pred_masks"], outputs["unnormal_boxes"], max_target_sizes, orig_target_sizes)
         ):  
-            mask_scores = torch.zeros(outpus["pred_masks"].shape[1])
+            mask_scores = torch.zeros(outputs["pred_masks"].shape[1])
             blank_mask = torch.zeros(outputs["pred_masks"].shape[1], max_h, max_w)
             for mask in range(cur_mask.shape[0]):
                 box_w = max(int(round((cur_boxes[mask,2]-cur_boxes[mask,0]).item())), 1)
@@ -312,7 +312,7 @@ class PostProcessSegmMFD(nn.Module):
                                    (box_h, box_w),
                                     mode="bilinear")[0,0,:,:]
                 sig_inter = inter.sigmoid()
-                mask_scores = results[i]["scores"][mask] * ((sig_inter>self.threshold)*sig_inter).sum()/((sig_inter>self.threshold).sum())
+                mask_scores[mask] = results[i]["scores"][mask] * ((sig_inter>self.threshold)*sig_inter).sum()/((sig_inter>self.threshold).sum())
                 self._paste(inter, blank_mask, cur_boxes, mask, t)
                 
             
