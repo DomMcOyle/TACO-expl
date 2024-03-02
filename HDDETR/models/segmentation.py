@@ -45,10 +45,13 @@ class DETRsegm(nn.Module):
     def forward(self, samples: NestedTensor):
         if not isinstance(samples, NestedTensor):
             samples = nested_tensor_from_tensor_list(samples)
+        # gets features and pos encoding from backbone
         features, pos = self.detr.backbone(samples)
-
+        
+        # batch size
         bs = features[-1].tensors.shape[0]
-
+        
+        # src last smaller resolution
         src, mask = features[-1].decompose()
         src_proj = self.detr.input_proj(src)
         hs, memory = self.detr.transformer(
@@ -296,10 +299,11 @@ class PostProcessSegmMFD(nn.Module):
         assert len(orig_target_sizes) == len(max_target_sizes)
         max_h, max_w = max_target_sizes.max(0)[0].tolist()
         
-
+        
         for i, (cur_mask, cur_boxes, t, tt) in enumerate(
             zip(outputs["pred_masks"], outputs["unnormal_boxes"], max_target_sizes, orig_target_sizes)
         ):  
+            mask_scores = torch.zeros(outpus["pred_masks"].shape[1])
             blank_mask = torch.zeros(outputs["pred_masks"].shape[1], max_h, max_w)
             for mask in range(cur_mask.shape[0]):
                 box_w = max(int(round((cur_boxes[mask,2]-cur_boxes[mask,0]).item())), 1)
@@ -307,14 +311,19 @@ class PostProcessSegmMFD(nn.Module):
                 inter = interpolate(cur_mask[mask].expand(1,1,-1,-1),
                                    (box_h, box_w),
                                     mode="bilinear")[0,0,:,:]
+                sig_inter = inter.sigmoid()
+                mask_scores = results[i]["scores"][mask] * ((sig_inter>self.threshold)*sig_inter).sum()/((sig_inter>self.threshold).sum())
                 self._paste(inter, blank_mask, cur_boxes, mask, t)
+                
             
             blank_mask = (blank_mask.sigmoid() > self.threshold).cpu()
+            
             img_h, img_w = t[0], t[1]
             results[i]["masks"] = blank_mask[:, :img_h, :img_w].unsqueeze(1)
             results[i]["masks"] = F.interpolate(
                 results[i]["masks"].float(), size=tuple(tt.tolist()), mode="nearest"
             ).byte()
+            results[i]["scores"] = mask_scores
 
         return results
         
