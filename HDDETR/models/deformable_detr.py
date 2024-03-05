@@ -460,13 +460,13 @@ class SetCriterion(nn.Module):
         target_masks, valid = nested_tensor_from_tensor_list(
             [t["masks"] for t in targets]
         ).decompose()
-        target_masks = target_masks.to(src_masks)
+        target_masks = target_masks[tgt_idx].to(src_masks)
 
         src_masks = src_masks[src_idx]
         src_boxes = outputs["unnormal_boxes"][src_idx]
-        real_size_masks = torch.zeros(src_masks.shape[0],
-                                       target_masks.shape[-2],
-                                       target_masks.shape[-1])
+
+        inter_list = []
+        cut_mask_list = []
         for m in range(src_masks.shape[0]):
             box_w = max(int(round((src_boxes[m,2]-src_boxes[m,0]).item())), 1)
             box_h = max(int(round((src_boxes[m,3]-src_boxes[m,1]).item())), 1)
@@ -474,18 +474,35 @@ class SetCriterion(nn.Module):
             inter = interpolate(src_masks[m].expand(1,1,-1,-1),
                                  (box_h, box_w),
                                  mode="bilinear")[0,0,:,:]
-            self._paste(inter, real_size_masks, src_boxes, m, act_size)
-                                 
-        src_masks = real_size_masks.flatten(1).to(src_masks)
+            inter_list.append(inter.flatten())
+            cut_mask = self._cut(target_masks, src_boxes, m, act_size, box_h, box_w)
+            cut_mask_list.append(cut_mask.flatten())
+    
+        max_len = max([torch.numel(i) for i in inter_list])
+        linearized_inter= torch.zeros(src_masks.shape[0], max_len)
+        linearized_target = torch.zeros(src_masks.shape[0], max_len)
+        linearized_mask = torch.zeros(src_masks.shape[0], max_len)
+        
+        for m in range(src_masks.shape[0]):
+            linearized_inter[m][:inter_list[m].shape[0]] = inter_list[m]
+            linearized_target[m][:cut_mask_list[m].shape[0]] = cut_mask_list[m]
+            linearized_mask[m][:cut_mask_list[m].shape[0]] = 1.
 
-        target_masks = target_masks[tgt_idx].flatten(1)
 
         losses = {
-            "loss_mask": sigmoid_focal_loss(src_masks, target_masks, num_boxes),
-            "loss_dice": dice_loss(src_masks, target_masks, num_boxes),
+            "loss_mask": sigmoid_focal_loss(linearized_inter, linearized_target, num_boxes, mask=linearized_mask),
+            "loss_dice": dice_loss(linearized_inter, linearized_target, num_boxes),
         }
         return losses
-     
+        
+    def _cut(self, mask, flatboxes, index, act_size, box_h, box_w):
+      ox = int(round(flatboxes[index][0].item()))
+      oy = int(round(flatboxes[index][1].item()))
+      x1 = min(box_w, act_size[1]-ox)
+      y1 = min(box_h, act_size[0]-oy)
+
+      return mask[index][oy:oy+y1,ox:ox+x1] 
+      
     def _paste(self, roi, empty_mask, flatboxes, index, act_size):
       ox = int(round(flatboxes[index][0].item()))
       oy = int(round(flatboxes[index][1].item()))
