@@ -514,7 +514,7 @@ class SetCriterion(nn.Module):
         return mask_intersection/mask_union
 
     
-    def _cut(self, mask, flatboxes, index, act_size, box_h, box_w, start_from_oxoy=False):
+    def _cut(self, mask, flatboxes, index, act_size, box_h, box_w, start_from_oxoy=True):
       ox = int(round(flatboxes[index][0].item()))
       oy = int(round(flatboxes[index][1].item()))
       x1 = min(box_w, act_size[1]-ox)
