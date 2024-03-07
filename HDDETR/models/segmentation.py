@@ -313,8 +313,7 @@ class PostProcessSegmMFD(nn.Module):
                 inter = interpolate(cur_mask[mask].expand(1,1,-1,-1),
                                    (box_h, box_w),
                                     mode="bilinear")[0,0,:,:]
-                sig_inter = inter.sigmoid()
-                mask_scores[mask] = results[i]["scores"][mask] * ((sig_inter>self.threshold)*sig_inter).sum()/((sig_inter>self.threshold).sum())
+                mask_scores[mask] = results[i]["scores"][mask] * outputs["mask_scores"][i][mask]
                 self._paste(inter, blank_mask, cur_boxes, mask, t)
                 
             

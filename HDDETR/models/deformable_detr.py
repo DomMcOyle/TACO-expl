@@ -445,7 +445,7 @@ class SetCriterion(nn.Module):
         }
         return losses
         
-    def loss_masks_MFD(self, outputs, targets, indices, num_boxes):
+    def loss_masks_MFD(self, outputs, targets, indices, num_boxes, maskiou=True):
         """Compute the losses related to the masks: the focal loss and the dice loss.
            targets dicts must contain the key "masks" containing a tensor of dim [nb_target_boxes, h, w]
         """
@@ -464,19 +464,28 @@ class SetCriterion(nn.Module):
 
         src_masks = src_masks[src_idx]
         src_boxes = outputs["unnormal_boxes"][src_idx]
+        if maskiou:
+            src_iou = outputs["mask_scores"][src_idx]
 
         inter_list = []
         cut_mask_list = []
+        gt_iou_list = []
         for m in range(src_masks.shape[0]):
             box_w = max(int(round((src_boxes[m,2]-src_boxes[m,0]).item())), 1)
             box_h = max(int(round((src_boxes[m,3]-src_boxes[m,1]).item())), 1)
             act_size = targets[src_idx[0][m]]["size"]
+            
             inter = interpolate(src_masks[m].expand(1,1,-1,-1),
                                  (box_h, box_w),
                                  mode="bilinear")[0,0,:,:]
             inter_list.append(inter.flatten())
+
             cut_mask = self._cut(target_masks, src_boxes, m, act_size, box_h, box_w)
             cut_mask_list.append(cut_mask.flatten())
+            if maskiou:
+                gt_iou = self._MaskIoU(cut_mask, inter)
+                gt_iou_list.append(gt_iou)
+
     
         max_len = max([torch.numel(i) for i in inter_list])
         linearized_inter= torch.zeros(src_masks.shape[0], max_len)
@@ -493,8 +502,17 @@ class SetCriterion(nn.Module):
             "loss_mask": sigmoid_focal_loss(linearized_inter, linearized_target, num_boxes, mask=linearized_mask),
             "loss_dice": dice_loss(linearized_inter, linearized_target, num_boxes),
         }
+        if maskiou:
+            losses.update({"loss_mask_score": F.mse_loss(src_iou, torch.Tensor(gt_iou_list).to(src_iou), reduction="sum")/num_boxes})
         return losses
-        
+
+    def _MaskIoU(self, gt, mask):
+        mask = mask > 0.
+        mask_intersection = (mask*gt).sum()
+        mask_union = max(mask.sum() + gt.sum() - mask_intersection,1)
+        return mask_intersection/mask_union
+
+    
     def _cut(self, mask, flatboxes, index, act_size, box_h, box_w):
       ox = int(round(flatboxes[index][0].item()))
       oy = int(round(flatboxes[index][1].item()))
