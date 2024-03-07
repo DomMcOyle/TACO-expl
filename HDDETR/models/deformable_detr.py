@@ -445,7 +445,7 @@ class SetCriterion(nn.Module):
         }
         return losses
         
-    def loss_masks_MFD(self, outputs, targets, indices, num_boxes, maskiou=True):
+    def loss_masks_MFD(self, outputs, targets, indices, num_boxes):
         """Compute the losses related to the masks: the focal loss and the dice loss.
            targets dicts must contain the key "masks" containing a tensor of dim [nb_target_boxes, h, w]
         """
@@ -464,7 +464,7 @@ class SetCriterion(nn.Module):
 
         src_masks = src_masks[src_idx]
         src_boxes = outputs["unnormal_boxes"][src_idx]
-        if maskiou:
+        if "loss_mask_score" in self.weight_dict.keys():
             src_iou = outputs["mask_scores"][src_idx]
 
         inter_list = []
@@ -483,7 +483,7 @@ class SetCriterion(nn.Module):
 
             cut_mask = self._cut(target_masks[m], src_boxes, m, act_size, box_h, box_w)
             cut_mask_list.append(cut_mask.flatten())
-            if maskiou:
+            if "loss_mask_score" in self.weight_dict.keys():
                 gt_iou = self._MaskIoU(cut_mask, inter)
                 gt_iou_list.append(gt_iou)
 
@@ -503,14 +503,14 @@ class SetCriterion(nn.Module):
             "loss_mask": sigmoid_focal_loss(linearized_inter, linearized_target, num_boxes, mask=linearized_mask),
             "loss_dice": dice_loss(linearized_inter, linearized_target, num_boxes),
         }
-        if maskiou:
+        if "loss_mask_score" in self.weight_dict.keys():
             losses.update({"loss_mask_score": F.mse_loss(src_iou, torch.Tensor(gt_iou_list).to(src_iou), reduction="sum")/num_boxes})
         return losses
 
     def _MaskIoU(self, gt, mask):
         mask = mask > 0.
         mask_intersection = (mask*gt).sum()
-        mask_union = max(mask.sum() + gt.sum() - mask_intersection,1)
+        mask_union = max(mask.sum() + gt.sum() - mask_intersection, 1)
         return mask_intersection/mask_union
 
     
