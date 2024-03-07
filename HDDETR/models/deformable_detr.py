@@ -478,9 +478,10 @@ class SetCriterion(nn.Module):
             inter = interpolate(src_masks[m].expand(1,1,-1,-1),
                                  (box_h, box_w),
                                  mode="bilinear")[0,0,:,:]
+            inter = self._cut(inter, src_boxes, m, act_size, box_h, box_w, start_from_oxoy=False)
             inter_list.append(inter.flatten())
 
-            cut_mask = self._cut(target_masks, src_boxes, m, act_size, box_h, box_w)
+            cut_mask = self._cut(target_masks[m], src_boxes, m, act_size, box_h, box_w)
             cut_mask_list.append(cut_mask.flatten())
             if maskiou:
                 gt_iou = self._MaskIoU(cut_mask, inter)
@@ -513,13 +514,15 @@ class SetCriterion(nn.Module):
         return mask_intersection/mask_union
 
     
-    def _cut(self, mask, flatboxes, index, act_size, box_h, box_w):
+    def _cut(self, mask, flatboxes, index, act_size, box_h, box_w, start_from_oxoy=False):
       ox = int(round(flatboxes[index][0].item()))
       oy = int(round(flatboxes[index][1].item()))
       x1 = min(box_w, act_size[1]-ox)
       y1 = min(box_h, act_size[0]-oy)
-
-      return mask[index][oy:oy+y1,ox:ox+x1] 
+      if start_from_oxoy:
+        return mask[oy:oy+y1,ox:ox+x1] 
+      else:
+        return mask[:y1, :x1]
       
     def _paste(self, roi, empty_mask, flatboxes, index, act_size):
       ox = int(round(flatboxes[index][0].item()))
