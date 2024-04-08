@@ -182,7 +182,7 @@ class DeformableDETR(nn.Module):
         srcs = []
         masks = []
         for l, feat in enumerate(features):
-            src, mask = feat.decompose()
+            src, mask, _ = feat.decompose()
             srcs.append(self.input_proj[l](src))
             masks.append(mask)
             assert mask is not None
@@ -422,7 +422,7 @@ class SetCriterion(nn.Module):
         src_masks = outputs["pred_masks"]
 
         # TODO use valid to mask invalid areas due to padding in loss
-        target_masks, valid = nested_tensor_from_tensor_list(
+        target_masks, valid, _ = nested_tensor_from_tensor_list(
             [t["masks"] for t in targets]
         ).decompose()
         target_masks = target_masks.to(src_masks)
@@ -457,7 +457,7 @@ class SetCriterion(nn.Module):
         src_masks = outputs["pred_masks"]
 
         # TODO use valid to mask invalid areas due to padding in loss
-        target_masks, valid = nested_tensor_from_tensor_list(
+        target_masks, valid, _ = nested_tensor_from_tensor_list(
             [t["masks"] for t in targets]
         ).decompose()
         target_masks = target_masks[tgt_idx].to(src_masks)
