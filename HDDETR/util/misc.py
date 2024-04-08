@@ -336,24 +336,24 @@ def nested_tensor_from_tensor_list(tensor_list: List[Tensor]):
 
 
 class NestedTensor(object):
-    def __init__(self, tensors, mask: Optional[Tensor], size: Optional[Tensor]=None):
+    def __init__(self, tensors, mask: Optional[Tensor], sizes: Optional[Tensor]=None):
         self.tensors = tensors
         self.mask = mask
-        self.size = size
+        self.sizes = sizes
 
     def to(self, device, non_blocking=False):
         # type: (Device) -> NestedTensor # noqa
         cast_tensor = self.tensors.to(device, non_blocking=non_blocking)
         mask = self.mask
-        size = self.size
+        sizes = self.sizes
         if mask is not None:
             assert mask is not None
             cast_mask = mask.to(device, non_blocking=non_blocking)
         else:
             cast_mask = None
-        if size is not None:
-            assert size is not None
-            cast_size = size.to(device, non_blocking=non_blocking)
+        if sizes is not None:
+            assert sizes is not None
+            cast_size = sizes.to(device, non_blocking=non_blocking)
         else:
             cast_size = None
         return NestedTensor(cast_tensor, cast_mask, cast_size)
@@ -362,14 +362,17 @@ class NestedTensor(object):
         self.tensors.record_stream(*args, **kwargs)
         if self.mask is not None:
             self.mask.record_stream(*args, **kwargs)
-        if self.size is not None:
-            self.size.record_stream(*args, **kwargs)
+        if self.sizes is not None:
+            self.sizes.record_stream(*args, **kwargs)
 
     def decompose(self):
-        return self.tensors, self.mask, self.size
+        return self.tensors, self.mask, self.sizes
 
     def __repr__(self):
         return str(self.tensors)
+    
+    def size(self, dim=None):
+        return self.tensors.size(dim)
 
 
 def setup_for_distributed(is_master):
