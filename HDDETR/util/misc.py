@@ -324,37 +324,49 @@ def nested_tensor_from_tensor_list(tensor_list: List[Tensor]):
         device = tensor_list[0].device
         tensor = torch.zeros(batch_shape, dtype=dtype, device=device)
         mask = torch.ones((b, h, w), dtype=torch.bool, device=device)
-        for img, pad_img, m in zip(tensor_list, tensor, mask):
+        size = torch.zeros((b,2), dtype=torch.int32, device=device)
+        for img, pad_img, m,s in zip(tensor_list, tensor, mask,size):
             pad_img[: img.shape[0], : img.shape[1], : img.shape[2]].copy_(img)
             m[: img.shape[1], : img.shape[2]] = False
+            s[0] = img.shape[1]
+            s[1] = img.shape[2]
     else:
         raise ValueError("not supported")
-    return NestedTensor(tensor, mask)
+    return NestedTensor(tensor, mask, size)
 
 
 class NestedTensor(object):
-    def __init__(self, tensors, mask: Optional[Tensor]):
+    def __init__(self, tensors, mask: Optional[Tensor], size: Optional[Tensor]):
         self.tensors = tensors
         self.mask = mask
+        self.size = size
 
     def to(self, device, non_blocking=False):
         # type: (Device) -> NestedTensor # noqa
         cast_tensor = self.tensors.to(device, non_blocking=non_blocking)
         mask = self.mask
+        size = self.size
         if mask is not None:
             assert mask is not None
             cast_mask = mask.to(device, non_blocking=non_blocking)
         else:
             cast_mask = None
-        return NestedTensor(cast_tensor, cast_mask)
+        if size is not None:
+            assert size is not None
+            cast_size = size.to(device, non_blocking=non_blocking)
+        else:
+            cast_size = None
+        return NestedTensor(cast_tensor, cast_mask, cast_size)
 
     def record_stream(self, *args, **kwargs):
         self.tensors.record_stream(*args, **kwargs)
         if self.mask is not None:
             self.mask.record_stream(*args, **kwargs)
+        if self.size is not None:
+            self.size.record_stream(*args, **kwargs)
 
     def decompose(self):
-        return self.tensors, self.mask
+        return self.tensors, self.mask, self.size
 
     def __repr__(self):
         return str(self.tensors)
