@@ -656,16 +656,6 @@ class PostProcess(nn.Module):
         assert len(out_logits) == len(target_sizes)
         assert target_sizes.shape[1] == 2
         
-        prob = out_logits.softmax()
-        max_prob = torch.max(prob, -1)
-        topk_values, topk_indexes = torch.topk(max_prob.values, self.topk, dim=1)
-        scores = topk_values
-        prob = torch.gather(prob, 1, topk_indexes.unsqueeze(-1).repeat(1,1,10))
-        labels = prob.argmax(-1)
-        boxes = box_ops.box_cxcywh_to_xyxy(out_bbox)
-        boxes = torch.gather(boxes, 1, topk_indezes.unsqueeze(-1).repeat(1,1,4))
-        
-        """
         prob = out_logits.sigmoid()
         topk_values, topk_indexes = torch.topk(
             prob.view(out_logits.shape[0], -1), self.topk, dim=1
@@ -675,7 +665,7 @@ class PostProcess(nn.Module):
         labels = topk_indexes % out_logits.shape[2]
         boxes = box_ops.box_cxcywh_to_xyxy(out_bbox)
         boxes = torch.gather(boxes, 1, topk_boxes.unsqueeze(-1).repeat(1, 1, 4))
-        """
+
         # and from relative [0, 1] to absolute [0, height] coordinates
         img_h, img_w = target_sizes.unbind(1)
         scale_fct = torch.stack([img_w, img_h, img_w, img_h], dim=1)
