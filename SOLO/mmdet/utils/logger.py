@@ -1,6 +1,6 @@
 import logging
 
-from mmengine.dist import get_dist_info
+from mmcv.runner import get_dist_info
 
 
 def get_root_logger(log_file=None, log_level=logging.INFO):
