@@ -167,27 +167,31 @@ class ZoomIn(object):
     def __init__(self, max_size):
         self.max_size = max_size
 
-    def __call_(self, img, target):
-        h, w = img.shape[:2]
-        box_to_zoom = random.randint(0, len(target["boxes"]))
-        x1, y1, x2, y2 = target["boxes"][box_to_zoom]
+    def __call__(self, img, target):
+        w, h = img.size
+        box_to_zoom = random.randint(0, len(target["boxes"])-1)
+        x1, y1, x2, y2 = torch.round(target["boxes"][box_to_zoom])
         bbox_h = y2 - y1
         bbox_w = x2 - x1
         bbox_max_dim = max(bbox_w, bbox_h)
 
         if bbox_max_dim > self.max_size*0.75:
             downscale_at_least = min(1., self.max_size / bbox_max_dim)
-            downscale_min = self.max_size/max(img.shape[:2])
+            downscale_min = self.max_size/max(h, w)
             scale = random.random() * (downscale_at_least - downscale_min) + downscale_min
-            img, target = resize(img, target, (np.round(w*scale), np.round(h*scale)), self.max_size)
+            img, target = resize(img, target, (int(np.round(w*scale).item()), 
+                                               int(np.round(h*scale).item())), self.max_size)
+            w, h = img.size
+            x1, y1, x2, y2 = torch.round(target["boxes"][box_to_zoom])                                   
         
-        x0_min = max(x2 - self.max_size, 0)
-        x0_max = min(x1, w-self.max_size)
+        x0_min = max(x2.item() - self.max_size, 0)
+        x0_max = min(x1.item(), w-self.max_size)
         x0 = random.randint(x0_min, x0_max)
-        y0_min = max(y2 - self.max_size, 0)
-        y0_max = min(y1, h-self.max_size)
+        y0_min = max(y2.item() - self.max_size, 0)
+        y0_max = min(y1.item(), h-self.max_size)
         y0 = random.randint(y0_min, y0_max)
         return crop(img, target, (y0, x0, self.max_size, self.max_size))
+
 
 
 class RandomCrop(object):
