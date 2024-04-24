@@ -264,15 +264,20 @@ class RandomSelect(object):
     with probability p for transforms1 and (1 - p) for transforms2
     """
 
-    def __init__(self, transforms1, transforms2, p=0.5):
+    def __init__(self, transforms1, transforms2, transforms3, p=0.5):
         self.transforms1 = transforms1
         self.transforms2 = transforms2
+        self.transforms3 = transforms3
         self.p = p
 
     def __call__(self, img, target):
+        to_apply = random.choice([self.transforms1, self.transforms2, self.transforms3])
+        """
         if random.random() < self.p:
             return self.transforms1(img, target)
         return self.transforms2(img, target)
+        """
+        return to_apply(img, target)
 
 
 class ToTensor(object):
