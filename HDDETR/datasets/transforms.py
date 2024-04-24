@@ -185,10 +185,10 @@ class ZoomIn(object):
             x1, y1, x2, y2 = torch.round(target["boxes"][box_to_zoom])                                   
         
         x0_min = max(x2.item() - self.max_size, 0)
-        x0_max = min(x1.item(), w-self.max_size)
+        x0_max = min(x1.item(), max(w-self.max_size,0))
         x0 = random.randint(x0_min, x0_max)
         y0_min = max(y2.item() - self.max_size, 0)
-        y0_max = min(y1.item(), h-self.max_size)
+        y0_max = min(y1.item(), max(h-self.max_size, 0))
         y0 = random.randint(y0_min, y0_max)
         return crop(img, target, (y0, x0, self.max_size, self.max_size))
 
