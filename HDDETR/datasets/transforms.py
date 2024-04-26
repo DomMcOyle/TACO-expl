@@ -271,7 +271,8 @@ class RandomSelect(object):
         self.p = p
 
     def __call__(self, img, target):
-        to_apply = random.choice([self.transforms1, self.transforms2, self.transforms3])
+        t_list = [self.transforms1, self.trasforms2, self.trasforms3]
+        to_apply = random.choice([t for t in t_list if t is not None])
         """
         if random.random() < self.p:
             return self.transforms1(img, target)
