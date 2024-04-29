@@ -19,8 +19,8 @@ from detectron2.utils.memory import retry_if_cuda_oom
 
 import sys
 # relative imports must become absolute:
-sys.path.append('/content/MaskDINO/maskdino/modeling/')
-from criterion import SetCriterion
+sys.path.append('/content/MaskDINO/maskdino/')
+from modeling.criterion import SetCriterion
 from matcher import HungarianMatcher
 sys.path.append('/content/MaskDINO/maskdino/utils/')
 import box_ops as box_ops

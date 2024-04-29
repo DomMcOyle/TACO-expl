@@ -20,12 +20,10 @@ from detectron2.layers import Conv2d, ShapeSpec, get_norm
 from detectron2.modeling import SEM_SEG_HEADS_REGISTRY
 
 import sys
-sys.path.append('/content/MaskDINO/maskdino/modeling/pixel_decoder/')
-from position_encoding import PositionEmbeddingSine
-sys.path.append('/content/MaskDINO/maskdino/utils/')
-from utils import _get_clones, _get_activation_fn
-sys.path.append('/content/MaskDINO/maskdino/modeling/pixel_decoder/ops/modules/')
-from ms_deform_attn import MSDeformAttn
+sys.path.append('/content/MaskDINO/maskdino/')
+from modeling.pixel_decoder.position_encoding import PositionEmbeddingSine
+from utils.utils import _get_clones, _get_activation_fn
+from modeling.pixel_decoder.ops.modules import MSDeformAttn
 
 
 def build_pixel_decoder(cfg, input_shape):
