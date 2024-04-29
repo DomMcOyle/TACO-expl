@@ -16,11 +16,10 @@ from detectron2.utils.registry import Registry
 from detectron2.structures import BitMasks
 
 import sys
-sys.path.append('/content/MaskDINO/maskdino/modeling/transformer_decoder/')
-from dino_decoder import TransformerDecoder, DeformableTransformerDecoderLayer
-sys.path.append('/content/MaskDINO/maskdino/utils/')
-from utils import MLP, gen_encoder_output_proposals, inverse_sigmoid
-import box_ops as box_ops
+sys.path.append('/content/MaskDINO/maskdino/')
+from modeling.transformer_decoder.dino_decoder import TransformerDecoder, DeformableTransformerDecoderLayer
+from utils.utils import MLP, gen_encoder_output_proposals, inverse_sigmoid
+import utils.box_ops as box_ops
 
 
 TRANSFORMER_DECODER_REGISTRY = Registry("TRANSFORMER_MODULE")

@@ -12,10 +12,9 @@ from torch import nn, Tensor
 from torch.cuda.amp import autocast
 
 import sys
-sys.path.append('/content/MaskDINO/maskdino/modeling/pixel_decoder/ops/modules/')
-from ms_deform_attn import MSDeformAttn
-sys.path.append('/content/MaskDINO/maskdino/utils/')
-from utils import MLP, _get_clones, _get_activation_fn, \
+sys.path.append('/content/MaskDINO/maskdino/')
+from modeling.pixel_decoder.ops.modules.ms_deform_attn import MSDeformAttn
+from utils.utils import MLP, _get_clones, _get_activation_fn, \
   gen_sineembed_for_position, inverse_sigmoid
 
 

@@ -22,9 +22,9 @@ import torch.nn.functional as F
 from torch.nn.init import xavier_uniform_, constant_
 
 import sys
-sys.path.append('/content/MaskDINO/maskdino/modeling/pixel_decoder/ops/functions/')
-from ms_deform_attn_func import MSDeformAttnFunction
-from ms_deform_attn_func import ms_deform_attn_core_pytorch
+sys.path.append('/content/MaskDINO/maskdino/')
+from modeling.pixel_decoder.ops.functions.ms_deform_attn_func import MSDeformAttnFunction
+from modeling.pixel_decoder.ops.functions.ms_deform_attn_func import ms_deform_attn_core_pytorch
 
 
 def _is_power_of_2(n):

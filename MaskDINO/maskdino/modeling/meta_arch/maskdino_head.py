@@ -14,10 +14,9 @@ from detectron2.layers import Conv2d, ShapeSpec, get_norm
 from detectron2.modeling import SEM_SEG_HEADS_REGISTRY
 
 import sys
-sys.path.append('/content/MaskDINO/maskdino/modeling/transformer_decoder/')
-from maskdino_decoder import build_transformer_decoder
-sys.path.append('/content/MaskDINO/maskdino/modeling/pixel_decoder/')
-from maskdino_encoder import build_pixel_decoder
+sys.path.append('/content/MaskDINO/maskdino/')
+from modeling.transformer_decoder.maskdino_decoder import build_transformer_decoder
+from modeling.pixel_decoder.maskdino_encoder import build_pixel_decoder
 
 
 @SEM_SEG_HEADS_REGISTRY.register()

@@ -21,9 +21,8 @@ import sys
 # relative imports must become absolute:
 sys.path.append('/content/MaskDINO/maskdino/')
 from modeling.criterion import SetCriterion
-from matcher import HungarianMatcher
-sys.path.append('/content/MaskDINO/maskdino/utils/')
-import box_ops as box_ops
+from modeling.matcher import HungarianMatcher
+import utils.box_ops as box_ops
 
 
 @META_ARCH_REGISTRY.register()
