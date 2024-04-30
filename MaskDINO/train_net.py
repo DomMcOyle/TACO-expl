@@ -43,6 +43,7 @@ from detectron2.solver.build import maybe_add_gradient_clipping
 from detectron2.utils.logger import setup_logger
 
 # MaskDINO
+"""
 from maskdino import (
     COCOInstanceNewBaselineDatasetMapper,
     COCOPanopticNewBaselineDatasetMapper,
@@ -52,6 +53,20 @@ from maskdino import (
     add_maskdino_config,
     DetrDatasetMapper,
 )
+"""
+import sys
+sys.path.append("/content/TACO-expl/MaskDINO/maskdino/data/dataset_mappers/")
+from coco_instance_new_baseline_dataset_mapper import COCOInstanceNewBaselineDatasetMapper
+from coco_panoptic_new_baseline_dataset_mapper import COCOPanopticNewBaselineDatasetMapper
+from mask_former_semantic_dataset_mapper import MaskFormerSemanticDatasetMapper
+from detr_dataset_mapper import DetrDatasetMapper
+sys.path.append("/content/TACO-expl/MaskDINO/maskdino/evaluation")
+from instance_evaluation import InstanceSegEvaluator
+sys.path.append("/content/TACO-expl/MaskDINO/maskdino/")
+from test_time_augmentation import SemanticSegmentorWithTTA
+from config import add_maskdino_config
+
+
 import random
 from detectron2.engine import (
     DefaultTrainer,
