@@ -37,11 +37,16 @@ from detectron2.evaluation import (
 from detectron2.modeling import GeneralizedRCNNWithTTA
 from detectron2.utils.logger import setup_logger
 
-from adet.data.dataset_mapper import DatasetMapperWithBasis
-from adet.data.fcpose_dataset_mapper import FCPoseDatasetMapper
-from adet.config import get_cfg
-from adet.checkpoint import AdetCheckpointer
-from adet.evaluation import TextEvaluator
+import sys
+sys.path.append('/content/AdelaiDet/adet/data/')
+from dataset_mapper import DatasetMapperWithBasis
+from fcpose_dataset_mapper import FCPoseDatasetMapper
+sys.path.append('/content/AdelaiDet/adet/config/')
+from config import get_cfg
+sys.path.append('/content/AdelaiDet/adet/checkpoint/')
+from adet_checkpoint import AdetCheckpointer
+sys.path.append('/content/AdelaiDet/adet/evaluation/')
+from text_evaluation_all import TextEvaluator
 
 
 class Trainer(DefaultTrainer):

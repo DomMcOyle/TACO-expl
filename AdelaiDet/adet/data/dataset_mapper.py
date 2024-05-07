@@ -14,8 +14,8 @@ from detectron2.data.dataset_mapper import DatasetMapper
 from detectron2.data.detection_utils import SizeMismatchError
 from detectron2.structures import BoxMode
 
-from .augmentation import RandomCropWithInstance
-from .detection_utils import (annotations_to_instances, build_augmentation,
+from augmentation import RandomCropWithInstance
+from detection_utils import (annotations_to_instances, build_augmentation,
                               transform_instance_annotations)
 
 """

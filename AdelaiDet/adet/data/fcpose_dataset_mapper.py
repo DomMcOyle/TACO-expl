@@ -14,12 +14,12 @@ from detectron2.data.dataset_mapper import DatasetMapper
 from detectron2.data.detection_utils import SizeMismatchError
 from detectron2.structures import BoxMode
 
-from .augmentation import RandomCropWithInstance
-from .detection_utils import (annotations_to_instances, build_augmentation,
+from augmentation import RandomCropWithInstance
+from detection_utils import (annotations_to_instances, build_augmentation,
                               transform_instance_annotations)
 
-from adet.data.detection_utils import HeatmapGenerator
-from adet.data.dataset_mapper import DatasetMapperWithBasis
+from detection_utils import HeatmapGenerator
+from dataset_mapper import DatasetMapperWithBasis
 """
 This file contains the default mapping that's applied to "dataset dicts".
 """

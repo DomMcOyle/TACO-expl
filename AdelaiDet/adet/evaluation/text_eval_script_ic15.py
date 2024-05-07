@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 # encoding=utf8
 from collections import namedtuple
-from adet.evaluation import rrc_evaluation_funcs_ic15 as rrc_evaluation_funcs
+import rrc_evaluation_funcs_ic15 as rrc_evaluation_funcs
 import importlib
 import sys
 

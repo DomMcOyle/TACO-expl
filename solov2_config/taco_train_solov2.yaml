@@ -77,6 +77,48 @@ MODEL:
     NUM_BASES: 4
     NUM_CLASSES: 80
     NUM_CONVS: 3
+  BATEXT:
+    CANONICAL_SIZE: 96
+    CONV_DIM: 256
+    CUSTOM_DICT: ''
+    EVAL_TYPE: 3
+    IN_FEATURES:
+    - p2
+    - p3
+    - p4
+    NUM_CHARS: 25
+    NUM_CONV: 2
+    POOLER_RESOLUTION:
+    - 8
+    - 32
+    POOLER_SCALES:
+    - 0.25
+    - 0.125
+    - 0.0625
+    RECOGNITION_LOSS: ctc
+    RECOGNIZER: attn
+    SAMPLING_RATIO: 1
+    USE_AET: false
+    USE_COORDCONV: false
+    VOC_SIZE: 96
+  BLENDMASK:
+    ATTN_SIZE: 14
+    BOTTOM_RESOLUTION: 56
+    INSTANCE_LOSS_WEIGHT: 1.0
+    POOLER_SAMPLING_RATIO: 1
+    POOLER_SCALES:
+    - 0.25
+    POOLER_TYPE: ROIAlignV2
+    TOP_INTERP: bilinear
+    VISUALIZE: false
+  BOXINST:
+    BOTTOM_PIXELS_REMOVED: 10
+    ENABLED: false
+    PAIRWISE:
+      COLOR_THRESH: 0.3
+      DILATION: 2
+      SIZE: 3
+      WARMUP_ITERS: 10000
   BiFPN:
     IN_FEATURES:
     - res2
@@ -86,6 +128,18 @@ MODEL:
     NORM: ''
     NUM_REPEATS: 6
     OUT_CHANNELS: 160
+  CONDINST:
+    BOTTOM_PIXELS_REMOVED: -1
+    MASK_BRANCH:
+      CHANNELS: 128
+      IN_FEATURES:
+      - p3
+      - p4
+      - p5
+      NORM: BN
+      NUM_CONVS: 4
+      OUT_CHANNELS: 8
+      SEMANTIC_LOSS_ON: false
     MASK_HEAD:
       CHANNELS: 8
       DISABLE_REL_COORDS: false
@@ -103,6 +157,74 @@ MODEL:
     - stage3
     - stage4
     - stage5
+  FCOS:
+    BOX_QUALITY: ctrness
+    CENTER_SAMPLE: true
+    FPN_STRIDES:
+    - 8
+    - 16
+    - 32
+    - 64
+    - 128
+    INFERENCE_TH_TEST: 0.05
+    INFERENCE_TH_TRAIN: 0.05
+    IN_FEATURES:
+    - p3
+    - p4
+    - p5
+    - p6
+    - p7
+    LOC_LOSS_TYPE: giou
+    LOSS_ALPHA: 0.25
+    LOSS_GAMMA: 2.0
+    LOSS_NORMALIZER_CLS: fg
+    LOSS_WEIGHT_CLS: 1.0
+    NMS_TH: 0.6
+    NORM: GN
+    NUM_BOX_CONVS: 4
+    NUM_CLASSES: 80
+    NUM_CLS_CONVS: 4
+    NUM_SHARE_CONVS: 0
+    POST_NMS_TOPK_TEST: 100
+    POST_NMS_TOPK_TRAIN: 100
+    POS_RADIUS: 1.5
+    PRE_NMS_TOPK_TEST: 1000
+    PRE_NMS_TOPK_TRAIN: 1000
+    PRIOR_PROB: 0.01
+    SIZES_OF_INTEREST:
+    - 64
+    - 128
+    - 256
+    - 512
+    THRESH_WITH_CTR: false
+    TOP_LEVELS: 2
+    USE_DEFORMABLE: false
+    USE_RELU: true
+    USE_SCALE: true
+    YIELD_BOX_FEATURES: false
+    YIELD_PROPOSAL: false
+  FCPOSE:
+    ATTN_LEN: 2737
+    BASIS_MODULE:
+      BN_TYPE: SyncBN
+      COMMON_STRIDE: 8
+      CONVS_DIM: 128
+      LOSS_WEIGHT: 0.2
+      NUM_BASES: 32
+      NUM_CLASSES: 17
+    DISTANCE_NORM: 12.0
+    DYNAMIC_CHANNELS: 32
+    FOCAL_LOSS_ALPHA: 0.25
+    FOCAL_LOSS_GAMMA: 2.0
+    GT_HEATMAP_STRIDE: 2
+    HEAD_HEATMAP_SIGMA: 0.01
+    HEATMAP_SIGMA: 1.8
+    LOSS_WEIGHT_DIRECTION: 9.0
+    LOSS_WEIGHT_KEYPOINT: 2.5
+    MAX_PROPOSALS: 70
+    PROPOSALS_PER_INST: 70
+    SIGMA: 1
+  FCPOSE_ON: false
   FPN:
     FUSE_TYPE: sum
     IN_FEATURES:
