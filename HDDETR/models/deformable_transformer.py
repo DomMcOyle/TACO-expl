@@ -216,7 +216,7 @@ class DeformableTransformer(nn.Module):
         valid_ratios = torch.stack([self.get_valid_ratio(m) for m in masks], 1)
 
         # encoder
-        memory = self.encoder(
+        memory, encoder_out = self.encoder(
             src_flatten,
             spatial_shapes,
             level_start_index,
@@ -281,12 +281,6 @@ class DeformableTransformer(nn.Module):
 
         inter_references_out = inter_references
         
-        encoder_out = {"src":memory,
-        "valid_ratios":valid_ratios,
-        "spatial_shapes":spatial_shapes,
-        "level_start_index":level_start_index,
-        "pos": lvl_pos_embed_flatten,
-        "padding_mask": mask_flatten}
         if self.two_stage:
             return (
                 hs,
@@ -398,6 +392,7 @@ class DeformableTransformerEncoder(nn.Module):
         padding_mask=None,
     ):
         output = src
+        encoder_out = None
         reference_points = self.get_reference_points(
             spatial_shapes, valid_ratios, device=src.device
         )
@@ -421,8 +416,15 @@ class DeformableTransformerEncoder(nn.Module):
                     level_start_index,
                     padding_mask,
                 )
+            if i==3:
+                encoder_out = {"src":output,
+                "valid_ratios":valid_ratios,
+                "spatial_shapes":spatial_shapes,
+                "level_start_index":level_start_index,
+                "pos": pos,
+                "padding_mask": padding_mask}
 
-        return output
+        return output, encoder_out
 
 
 class DeformableTransformerDecoderLayer(nn.Module):
