@@ -349,7 +349,7 @@ MODEL:
     USE_FED_LOSS: false
     USE_SIGMOID_CE: false
   ROI_HEADS:
-    BATCH_SIZE_PER_IMAGE: 64
+    BATCH_SIZE_PER_IMAGE: 512
     IN_FEATURES:
     - res4
     IOU_LABELS:
@@ -505,40 +505,38 @@ MODEL:
     - stage3
     - stage4
     - stage5
-  WEIGHTS: detectron2://ImageNetPretrained/MSRA/R-50.pkl
-OUTPUT_DIR: ./output
+  WEIGHTS: /content/output/chkpt/model_0001949.pth
+OUTPUT_DIR: /content/output/chkpt/
 SEED: -1
 SOLVER:
   AMP:
-    ENABLED: false
-  BASE_LR: 0.01
-  BASE_LR_END: 0.0
+    ENABLED: true
+  BASE_LR: 0.001
+  BASE_LR_END: 0.0001
   BIAS_LR_FACTOR: 1.0
-  CHECKPOINT_PERIOD: 5000
+  CHECKPOINT_PERIOD: 150
   CLIP_GRADIENTS:
     CLIP_TYPE: value
     CLIP_VALUE: 1.0
-    ENABLED: false
+    ENABLED: true
     NORM_TYPE: 2.0
-  GAMMA: 0.1
+  GAMMA: 0.8
+  NUM_DECAYS: 3
   IMS_PER_BATCH: 8
-  LR_SCHEDULER_NAME: WarmupMultiStepLR
-  MAX_ITER: 270000
+  LR_SCHEDULER_NAME: WarmupCosineLR
+  MAX_ITER: 5748
   MOMENTUM: 0.9
   NESTEROV: false
   REFERENCE_WORLD_SIZE: 0
   STEPS:
-  - 210000
-  - 250000
-  WARMUP_FACTOR: 0.01
-  WARMUP_ITERS: 1000
-  WARMUP_METHOD: linear
+  - 1800
+  - 2100
   WEIGHT_DECAY: 0.0001
   WEIGHT_DECAY_BIAS: null
   WEIGHT_DECAY_NORM: 0.0
 TEST:
   AUG:
-    ENABLED: false
+    ENABLED: true
     FLIP: true
     MAX_SIZE: 4000
     MIN_SIZES:
