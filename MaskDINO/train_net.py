@@ -24,9 +24,13 @@ from typing import Any, Dict, List, Set
 import torch
 
 import detectron2.utils.comm as comm
+from detectron2.data import detection_utils
 from detectron2.checkpoint import DetectionCheckpointer
 from detectron2.config import get_cfg
-from detectron2.data import MetadataCatalog, build_detection_train_loader
+from detectron2.data import MetadataCatalog, build_detection_train_loader, build_detection_test_loader
+from detectron2.data.transforms.augmentation_impl import ResizeShortestEdge
+from detectron2.data.transforms import AugInput
+
 
 from detectron2.evaluation import (
     CityscapesInstanceEvaluator,
@@ -80,6 +84,37 @@ from detectron2.engine import (
 )
 import weakref
 
+
+class SimpleResizeDatasetMapper:
+    def __init__(self, cfg):
+        self.cfg = cfg
+    
+    def __call__(self, dataset_dict):
+      dataset_dict = copy.deepcopy(dataset_dict)  # it will be modified by code below
+      # can use other ways to read image
+      image = detection_utils.read_image(dataset_dict["file_name"], format="RGB")
+      # See "Data Augmentation" tutorial for details usage
+      auginput = AugInput(image)
+      resize_obj = ResizeShortestEdge(self.cfg.INPUT.MIN_SIZE_TEST, 
+                                          self.cfg.INPUT.MAX_SIZE_TEST,
+                                          sample_style = "choice")
+
+      transform = resize_obj(auginput)
+      image = torch.from_numpy(auginput.image.transpose(2, 0, 1))
+      annos = [
+          detection_utils.transform_instance_annotations(annotation, [transform], image.shape[1:])
+          for annotation in dataset_dict.pop("annotations")
+      ]
+      return {
+        # create the format that the model expects
+        "file_name": dataset_dict["file_name"], 
+        "height": image.shape[1],
+        "width": image.shape[2],
+        "image_id": dataset_dict["image_id"],
+        "image": image,
+        "instances": detection_utils.annotations_to_instances(annos, image.shape[1:],
+                                                        mask_format = self.cfg.INPUT.MASK_FORMAT)
+      }
 
 class Trainer(DefaultTrainer):
     """
@@ -153,7 +188,7 @@ class Trainer(DefaultTrainer):
             )
         # instance segmentation
         if evaluator_type == "coco":
-            evaluator_list.append(COCOEvaluator(dataset_name, output_dir=output_folder))
+            evaluator_list.append(COCOEvaluator(dataset_name, cfg, True, output_folder)) #COCOEvaluator(dataset_name, output_dir=output_folder)
         # panoptic segmentation
         if evaluator_type in [
             "coco_panoptic_seg",
@@ -232,6 +267,13 @@ class Trainer(DefaultTrainer):
         else:
             mapper = None
             return build_detection_train_loader(cfg, mapper=mapper)
+
+    #@classmethod
+    #def build_test_loader(cls, cfg, dataset_name):
+    #    #val_mapper = SimpleResizeDatasetMapper(cfg)
+    #    val_mapper = COCOInstanceNewBaselineDatasetMapper(cfg, False)
+    #    return build_detection_test_loader(cfg, dataset_name, mapper=val_mapper) 
+
 
     @classmethod
     def build_lr_scheduler(cls, cfg, optimizer):

@@ -303,7 +303,7 @@ class MaskDINO(nn.Module):
 
                 if self.sem_seg_postprocess_before_inference:
                     mask_pred_result = retry_if_cuda_oom(sem_seg_postprocess)(
-                        mask_pred_result, image_size, height, width
+                        mask_pred_result, image_size, image_size[0], image_size[1]
                     )
                     mask_cls_result = mask_cls_result.to(mask_pred_result)
                     # mask_box_result = mask_box_result.to(mask_pred_result)
@@ -325,9 +325,9 @@ class MaskDINO(nn.Module):
 
                 if self.instance_on:
                     mask_box_result = mask_box_result.to(mask_pred_result)
-                    height = new_size[0]/image_size[0]*height
-                    width = new_size[1]/image_size[1]*width
-                    mask_box_result = self.box_postprocess(mask_box_result, height, width)
+                    #height = new_size[0]/image_size[0]*height
+                    #width = new_size[1]/image_size[1]*width
+                    mask_box_result = self.box_postprocess(mask_box_result, image_size[0], image_size[1])
 
                     instance_r = retry_if_cuda_oom(self.instance_inference)(mask_cls_result, mask_pred_result, mask_box_result)
                     processed_results[-1]["instances"] = instance_r
@@ -458,7 +458,16 @@ class MaskDINO(nn.Module):
     def instance_inference(self, mask_cls, mask_pred, mask_box_result):
         # mask_pred is already processed to have the same shape as original input
         image_size = mask_pred.shape[-2:]
+        print("________THE IMAGE SIZE IS:________")
+        print(image_size)
+        print("__________________________________")
+        print(mask_cls.shape)
+        print("__________________________________")
+        print(mask_box_result.shape)
+        print("__________________________________")
         scores = mask_cls.sigmoid()  # [100, 80]
+        #print(mask_cls)
+        #print(scores)
         labels = torch.arange(self.sem_seg_head.num_classes, device=self.device).unsqueeze(0).repeat(self.num_queries, 1).flatten(0, 1)
         scores_per_image, topk_indices = scores.flatten(0, 1).topk(self.test_topk_per_image, sorted=False)  # select 100
         labels_per_image = labels[topk_indices]
@@ -484,6 +493,7 @@ class MaskDINO(nn.Module):
         # result.pred_boxes = BitMasks(mask_pred > 0).get_bounding_boxes()
 
         # calculate average mask prob
+
         mask_scores_per_image = (mask_pred.sigmoid().flatten(1) * result.pred_masks.flatten(1)).sum(1) / (result.pred_masks.flatten(1).sum(1) + 1e-6)
         if self.focus_on_box:
             mask_scores_per_image = 1.0
