@@ -69,7 +69,7 @@ MODEL:
       - 256
       - 512
   BACKBONE:
-    FREEZE_AT: 3
+    FREEZE_AT: 2
     NAME: build_resnet_backbone
   DEVICE: cuda
   FPN:
