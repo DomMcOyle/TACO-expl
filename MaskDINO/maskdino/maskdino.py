@@ -458,16 +458,7 @@ class MaskDINO(nn.Module):
     def instance_inference(self, mask_cls, mask_pred, mask_box_result):
         # mask_pred is already processed to have the same shape as original input
         image_size = mask_pred.shape[-2:]
-        print("________THE IMAGE SIZE IS:________")
-        print(image_size)
-        print("__________________________________")
-        print(mask_cls.shape)
-        print("__________________________________")
-        print(mask_box_result.shape)
-        print("__________________________________")
         scores = mask_cls.sigmoid()  # [100, 80]
-        #print(mask_cls)
-        #print(scores)
         labels = torch.arange(self.sem_seg_head.num_classes, device=self.device).unsqueeze(0).repeat(self.num_queries, 1).flatten(0, 1)
         scores_per_image, topk_indices = scores.flatten(0, 1).topk(self.test_topk_per_image, sorted=False)  # select 100
         labels_per_image = labels[topk_indices]
