@@ -1,3 +1,4 @@
+import numpy as np
 class AttrDict(dict):
     """
     class modelling the command line arguments

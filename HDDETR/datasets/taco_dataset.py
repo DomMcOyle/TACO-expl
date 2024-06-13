@@ -1,7 +1,7 @@
 import torch
 import numpy as np
-from torchvision_datasets.coco import CocoDetection as TvCocoDetection
-import transforms as T
+from .torchvision_datasets.coco import CocoDetection as TvCocoDetection
+import HDDETR.datasets.transforms as T
 from pycocotools import mask as coco_mask
 import HDDETR.util.misc as mutils
 from pathlib import Path
