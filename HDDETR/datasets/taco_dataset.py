@@ -1,3 +1,14 @@
+"""
+This file contains Functions and classes for TACO dataset loading in COCO 
+format for the DETR based models.
+
+Authors:
+- Dell'Olio Domenico
+- Delvecchio Giovanni Pio
+- Disabato Raffaele
+"""
+
+
 import torch
 import numpy as np
 from .torchvision_datasets.coco import CocoDetection as TvCocoDetection
