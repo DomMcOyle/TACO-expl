@@ -1,3 +1,13 @@
+"""
+This file contains the helper class and functions to define the parameters
+for Mask-Frozen DETR and DETR.
+
+Authors:
+- Dell'Olio Domenico
+- Delvecchio Giovanni Pio
+- Disabato Raffaele
+"""
+
 import numpy as np
 class AttrDict(dict):
     """
