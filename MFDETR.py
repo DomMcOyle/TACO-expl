@@ -19,6 +19,25 @@ from HDDETR.configs.attr_dict import get_DETRargs
 import torch.nn as nn
 import torch
 
+
+def load_mfdetr(mfdetr_path, args, num_classes, device):
+  """
+  Function loading the Mask-Frozen DETR path.
+  :params mfdetr_path: path containing the weights for Mask-Frozen DETR
+  :params args: Attribute Dictionary instance containing the arguments describing
+                the model to be loaded
+  :params num_classes: number of classes on which the model was trained on
+  :params device: torch device where to run the model
+  """
+  detr, criterion, postprocessor = load_detr(args, num_classes, load_dict=None)
+  mfdetr = MaskFrozenDETR(detr, device, num_classes)
+  load_checkpoint = torch.load(mfdetr_path)
+  mfdetr.load_state_dict(load_checkpoint["model_state_dict"])
+
+  return mfdetr, postprocessor
+
+
+
 def load_detr(args, num_classes, finetuning=False, load_dict="r50.pth"):
   """
   Function loading the DETR model.
