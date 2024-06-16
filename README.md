@@ -9,6 +9,11 @@ Link to MFDETR model weights: https://drive.google.com/drive/folders/12zwQl0ijFb
 
 Link to MaskDINO model weights: https://drive.google.com/drive/folders/1_4FLKe_NkUncGklEuIjqRbWVoDeJcWDy?usp=drive_link
 
+In this repository we present the code for our ML4CV project work, focused on a litter detection and segmentation dataset (instance segmentation task).
+
+We propose different architectures to solve the task, as well as we test some explainability methods to get some insights on the networks and their results. 
+
+The Notebooks containing our solutions are the one in bold in the following repository description. 
 
 Repository structure:
 Folders:
