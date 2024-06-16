@@ -20,7 +20,7 @@ import torch.nn as nn
 import torch
 
 
-def load_mfdetr(mfdetr_path, args, num_classes, device):
+def load_mfdetr(mfdetr_path, args, num_classes, device, freeze_detr=True):
   """
   Function loading the Mask-Frozen DETR path.
   :params mfdetr_path: path containing the weights for Mask-Frozen DETR
@@ -28,9 +28,10 @@ def load_mfdetr(mfdetr_path, args, num_classes, device):
                 the model to be loaded
   :params num_classes: number of classes on which the model was trained on
   :params device: torch device where to run the model
+  :params freeze_detr: boolean indicating whether to freeze the detr or not
   """
   detr, criterion, postprocessor = load_detr(args, num_classes, load_dict=None)
-  mfdetr = MaskFrozenDETR(detr, device, num_classes)
+  mfdetr = MaskFrozenDETR(detr, device, num_classes, freeze_detr=freeze_detr)
   load_checkpoint = torch.load(mfdetr_path)
   mfdetr.load_state_dict(load_checkpoint["model_state_dict"])
 
@@ -83,12 +84,13 @@ class MaskFrozenDETR(nn.Module):
   """
   Mask-Frozen DETR class
   """
-  def __init__(self, detr, device, num_classes, box_channels=128):
+  def __init__(self, detr, device, num_classes, box_channels=128, freeze_detr=True):
     """
     :param detr: detr instance to use as frozen feature and proposal extractor
     :param device: torch device on which the model must operate
     :param num_classes: number of classes to predict
     :param box_channels: channels to use for the extracted box activation maps
+    :param freeze_detr: Boolean indicating whether the DETR must be frozen or not.
     """
     super().__init__()
     self.device = device
@@ -96,8 +98,9 @@ class MaskFrozenDETR(nn.Module):
     self.detr.num_queries = self.detr.num_queries_one2one
     self.detr.transformer.two_stage_num_proposals = self.detr.num_queries_one2one
     self.num_classes = num_classes
-    for param in detr.parameters():
-      param.requires_grad = False
+    if freeze_detr:
+      for param in detr.parameters():
+        param.requires_grad = False
     # see deformable encoder block
     pre_compression_channels = 256
     # layer for feature encoding
