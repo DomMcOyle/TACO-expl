@@ -22,16 +22,17 @@ Folders:
 - solov2_config: contains SOLOv2 config files
 
 Files:
-- Dataset splitting ad label replacing.ipynb: contains the script to split the official TACO dataset and get the TACO-10 subset of labels
+- **Dataset splitting ad label replacing.ipynb**: contains the script to split the official TACO dataset and get the TACO-10 subset of labels
 - download.py: contains the script for the dataset downloading
-- Detection-based XAI.ipynb: contains the script for object detection based explainability methods
-- MaskDINO Training Notebook.ipynb: contains the training script for the MaskDINO model training
-- MFDETR Training Notebook.ipynb: contains the training script for the Mask-Frozen DETR model training
+- **Detection based XAI.ipynb**: contains the script for object detection based explainability methods
+- **MaskDINO Training Notebook.ipynb**: contains the training script for the MaskDINO model training
+- **MFDETR Training Notebook.ipynb**: contains the training script for the Mask-Frozen DETR model training
 - MFDETR.py: contains the Mask-Frozen DETR model implementation and helper functions for loading
 - README.md: this file
 - requirements.txt: requirements file 
-- SOLOv2 Training Notebook: contains the training script for the SOLOv2 model
-- validation resizing.ipynb: contains functions for the dataset resizing (images and targets) as well as for image rotation
+- **SOLOv2 Training Notebook.ipynb**: contains the training script for the SOLOv2 model
+- **Segmentation based XAI.ipynb**: containins the script for semantic segmentation based explainability methods
+- **validation resizing.ipynb**: contains functions for the dataset resizing (images and targets) as well as for image rotation
 - visual_utils.py: contains functions for segmentation-based XAI
 
 
